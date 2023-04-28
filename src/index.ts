@@ -1,12 +1,43 @@
+import express, { Application, NextFunction, Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
 import bodyParser from "body-parser";
-import express, { Application, Request, Response } from "express";
+import Validator from "validatorjs";
 
 const app: Application = express();
 const prisma = new PrismaClient();
 const port = process.env.PORT;
 
+const formValidation = (
+  request: Request,
+  response: Response,
+  next: NextFunction
+) => {
+  let validated: boolean = false;
+  const rules = {
+    firstName: "required",
+    lastName: "required",
+    email: "required|email",
+    password: "required",
+  };
+
+  if (["POST", "PUT"].includes(request.method)) {
+    const validation = new Validator(request.body, rules);
+
+    if (validation.fails()) {
+      response.status(422).json(validation.errors.errors);
+    } else {
+      validated = true;
+    }
+  }
+
+  if (validated) {
+    next();
+  }
+};
+
 app.use(bodyParser.json());
+
+app.use(formValidation);
 
 app.get("/", async (request: Request, response: Response) => {
   try {
