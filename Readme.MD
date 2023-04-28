@@ -4,3 +4,4 @@ Uses:
 API - Express
 Database - MySql
 ORM - prisma
+Validation - validatorjs
